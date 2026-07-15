@@ -3,6 +3,7 @@ import {
   useGetTransferList, 
   useCreateTransfer,
   useDeleteTransfer,
+  useUpdateTransfer,
   getGetTransferListQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, ArrowRightLeft, Smartphone, Camera, Image, X, Trash2, ZoomIn } from "lucide-react";
+import { Plus, ArrowRightLeft, Smartphone, Camera, ImageIcon, X, Trash2, ZoomIn, Pencil } from "lucide-react";
 
 // ─── Photo upload & OCR-ish parsing helper ─────────────────────────────────
 
@@ -216,7 +217,8 @@ function TransferForm({ onSuccess }: { onSuccess: () => void }) {
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const createMut = useCreateTransfer();
   const { toast } = useToast();
@@ -242,6 +244,8 @@ function TransferForm({ onSuccess }: { onSuccess: () => void }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) void handlePhoto(file);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -290,46 +294,62 @@ function TransferForm({ onSuccess }: { onSuccess: () => void }) {
       {/* Foto Bukti Transfer */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Foto Bukti Transfer</label>
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className="relative border-2 border-dashed border-border hover:border-primary/50 rounded-xl cursor-pointer transition-colors overflow-hidden"
-        >
-          {photoPreview ? (
-            <div className="relative">
-              <img src={photoPreview} alt="Bukti" className="w-full max-h-48 object-contain bg-muted/30" />
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setPhotoPreview(null); setFormData(f => ({...f, buktiFoto: ""})); }}
-                className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow"
-              >
-                <X className="w-3 h-3" />
-              </button>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs text-center py-1.5">
-                Klik untuk ganti foto
-              </div>
+
+        {photoPreview ? (
+          <div className="relative border-2 border-border rounded-xl overflow-hidden">
+            <img src={photoPreview} alt="Bukti" className="w-full max-h-48 object-contain bg-muted/30" />
+            <button
+              type="button"
+              onClick={() => { setPhotoPreview(null); setFormData(f => ({...f, buktiFoto: ""})); }}
+              className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow"
+            >
+              <X className="w-3 h-3" />
+            </button>
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs text-center py-1">
+              Foto terpilih ✓
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
-              {isProcessing ? (
-                <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-              ) : (
-                <>
-                  <div className="flex gap-3">
-                    <Camera className="w-6 h-6" />
-                    <Image className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-medium">Ambil foto atau pilih dari galeri</p>
-                  <p className="text-xs">JPG, PNG — nominal akan otomatis terdeteksi</p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+          </div>
+        ) : isProcessing ? (
+          <div className="border-2 border-dashed border-border rounded-xl flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              className="flex flex-col items-center gap-2 py-5 border-2 border-dashed border-border hover:border-indigo-400 hover:bg-indigo-50 rounded-xl transition-colors text-muted-foreground hover:text-indigo-600"
+            >
+              <Camera className="w-7 h-7" />
+              <span className="text-sm font-medium">Foto Langsung</span>
+              <span className="text-xs">Ambil via kamera</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => galleryInputRef.current?.click()}
+              className="flex flex-col items-center gap-2 py-5 border-2 border-dashed border-border hover:border-indigo-400 hover:bg-indigo-50 rounded-xl transition-colors text-muted-foreground hover:text-indigo-600"
+            >
+              <ImageIcon className="w-7 h-7" />
+              <span className="text-sm font-medium">Dari Galeri</span>
+              <span className="text-xs">Pilih dari HP</span>
+            </button>
+          </div>
+        )}
+
+        {/* Camera input */}
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        {/* Gallery input — no capture, browser picks file picker / gallery */}
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
           className="hidden"
           onChange={handleFileChange}
         />
