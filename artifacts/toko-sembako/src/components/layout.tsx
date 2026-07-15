@@ -13,8 +13,11 @@ import {
   FileText,
   Menu,
   Store,
-  X
+  X,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
+import { useAuth } from "@/contexts/auth";
 
 const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -32,6 +35,8 @@ const navItems = [
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col md:flex-row font-sans">
@@ -64,6 +69,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           Toko Sembako
         </div>
+
         <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           <div className="text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider mb-4 mt-2 px-3">Menu Operasional</div>
           {navItems.map((item) => {
@@ -86,8 +92,36 @@ export function Layout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-sidebar-border/50 text-xs text-sidebar-foreground/40 text-center">
-          Sistem Sembako v1.0
+
+        {/* User section */}
+        <div className="p-4 border-t border-sidebar-border/50">
+          <div className="relative">
+            <button
+              onClick={() => setUserMenuOpen(v => !v)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-sidebar-accent/30 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-sidebar-primary flex items-center justify-center text-sidebar-primary-foreground font-bold text-sm flex-shrink-0">
+                {user?.name?.charAt(0) ?? "O"}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sidebar-foreground text-sm font-semibold truncate">{user?.name}</p>
+                <p className="text-sidebar-foreground/50 text-xs truncate">{user?.username}</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-sidebar-foreground/50 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {userMenuOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border border-card-border rounded-xl shadow-xl overflow-hidden z-50">
+                <button
+                  onClick={() => { logout(); setUserMenuOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Keluar dari Sistem
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
 
