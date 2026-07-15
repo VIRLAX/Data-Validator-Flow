@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Toko Sembako"
+version = "1.0.0"
+id = "artifacts/toko-sembako"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23055
+
+[services.development]
+run = "pnpm --filter @workspace/toko-sembako run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/toko-sembako", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/toko-sembako/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23055"
+BASE_PATH = "/"
