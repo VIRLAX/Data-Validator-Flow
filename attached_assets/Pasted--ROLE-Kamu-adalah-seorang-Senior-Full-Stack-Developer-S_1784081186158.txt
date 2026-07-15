@@ -1,0 +1,453 @@
+## ROLE
+ 
+Kamu adalah seorang **Senior Full Stack Developer**, **Senior UI/UX Designer**, **System Analyst**, **Database Architect**, dan **Business Analyst** dengan pengalaman membangun sistem inventori, POS (Point of Sale), ERP, dan sistem manajemen gudang.
+ 
+Tugasmu adalah membuat sebuah **Web Management System** untuk toko sembako yang fokus pada penjualan beras, minyak, telur, dan barang kebutuhan lainnya.
+ 
+Aplikasi ini **bukan sekadar aplikasi pencatatan**, melainkan sistem yang membantu pekerjaan penjaga toko agar seluruh aktivitas operasional menjadi lebih cepat, rapi, otomatis, akurat, mudah digunakan, dan dapat divalidasi.
+  
+# LATAR BELAKANG
+ 
+Saat ini seluruh aktivitas toko masih menggunakan buku tulis.
+ 
+Setiap hari penjaga toko harus menulis secara manual:
+ 
+ 
+- Barang masuk
+ 
+- Pengeluaran
+ 
+- Transfer / QRIS
+ 
+- Uang setor
+ 
+- Uang sisa
+ 
+- Stok seluruh barang
+ 
+
+ 
+Proses tersebut memakan waktu cukup lama.
+ 
+Selain itu sering terjadi:
+ 
+ 
+- lupa mencatat
+ 
+- salah menghitung
+ 
+- harus membuka catatan lama
+ 
+- sulit mencari histori
+ 
+- sulit mengetahui apabila terjadi selisih uang maupun stok.
+ 
+
+ 
+Karena itu tujuan utama sistem ini adalah melakukan **digitalisasi operasional toko**, bukan mengganti proses kerja yang sudah ada.
+  
+# TUJUAN
+ 
+Website harus mampu menjadi asisten digital penjaga toko.
+ 
+Semua proses harian dilakukan melalui website.
+ 
+Website harus mampu:
+ 
+ 
+- mempercepat pencatatan
+ 
+- menghitung otomatis
+ 
+- memvalidasi data
+ 
+- mengurangi human error
+ 
+- memberikan laporan yang jelas
+ 
+- mempermudah pengecekan stok
+ 
+- mempermudah pengecekan uang
+ 
+- menghasilkan laporan harian, mingguan, bulanan, hingga tahunan.
+ 
+
+  
+# KONSEP SISTEM
+ 
+Website ini **bukan POS kasir biasa**.
+ 
+Website ini adalah **Sistem Operasional Toko**.
+ 
+Semua aktivitas toko dicatat.
+ 
+Lalu sistem menghitung semuanya secara otomatis.
+ 
+Setelah itu sistem melakukan validasi antara:
+ 
+Data Sistem
+ 
+VS
+ 
+Kondisi nyata di toko.
+ 
+Apabila sama maka status:
+ 
+VALID
+ 
+Apabila berbeda maka sistem harus menunjukkan selisihnya secara detail.
+  
+# FITUR YANG WAJIB ADA
+ 
+## Dashboard
+ 
+Dashboard modern.
+ 
+Menampilkan:
+ 
+ 
+- Total stok seluruh barang
+ 
+- Barang hampir habis
+ 
+- Barang masuk hari ini
+ 
+- Pengeluaran hari ini
+ 
+- Total Cash
+ 
+- Total Transfer
+ 
+- Total QRIS
+ 
+- Uang Setor
+ 
+- Uang Sisa
+ 
+- Omzet Hari Ini
+ 
+- Total transaksi
+ 
+- Grafik transaksi
+ 
+- Grafik stok
+ 
+
+ 
+Dashboard harus mudah dipahami.
+  
+# Master Barang
+ 
+Admin dapat menambahkan barang.
+ 
+Contoh:
+ 
+Beras Oriza
+ 
+Beras Dara
+ 
+Beras HMS
+ 
+Beras Ciparay
+ 
+Beras Mahatani
+ 
+Minyak
+ 
+Telur
+ 
+Mie
+ 
+Kara
+ 
+dan lain-lain.
+ 
+Setiap barang memiliki:
+ 
+Nama Barang
+ 
+Kategori
+ 
+Satuan
+ 
+Karung
+ 
+Dus
+ 
+Ikat
+ 
+Botol
+ 
+Pcs
+ 
+Harga Beli
+ 
+Harga Jual
+ 
+Stok
+ 
+Status Aktif
+ 
+Barcode (Opsional)
+ 
+Foto Barang
+  
+# Barang Masuk
+ 
+Ketika supplier mengirim barang.
+ 
+Input:
+ 
+Tanggal
+ 
+Supplier
+ 
+Barang
+ 
+Jumlah
+ 
+Harga
+ 
+Catatan
+ 
+Setelah disimpan.
+ 
+Stok otomatis bertambah.
+ 
+Riwayat otomatis tersimpan.
+  
+# Penjualan
+ 
+Saat ada pembeli.
+ 
+Pilih barang.
+ 
+Masukkan jumlah.
+ 
+Sistem otomatis:
+ 
+mengurangi stok
+ 
+menghitung total
+ 
+menghitung laba kotor
+ 
+menyimpan histori.
+  
+# Pengeluaran
+ 
+Contoh:
+ 
+Kresek
+ 
+Galon
+ 
+Bensin
+ 
+Makan
+ 
+Plastik
+ 
+Transport
+ 
+dll.
+ 
+Input:
+ 
+Tanggal
+ 
+Kategori
+ 
+Nominal
+ 
+Catatan
+ 
+Total otomatis.
+  
+# Transfer / QRIS
+ 
+Input transaksi non tunai.
+ 
+Misal:
+ 
+QRIS
+ 
+Transfer Bank
+ 
+E-Wallet
+ 
+Input:
+ 
+Nominal
+ 
+Keterangan
+ 
+Bukti Transfer (Opsional)
+ 
+Semua transaksi harus masuk laporan.
+  
+# Cash
+ 
+Sistem harus memiliki modul uang cash.
+ 
+Bukan hanya nominal.
+ 
+Tetapi juga jumlah lembar uang.
+ 
+Contoh:
+ 
+100.000
+ 
+50.000
+ 
+20.000
+ 
+10.000
+ 
+5.000
+ 
+2.000
+ 
+1.000
+ 
+500
+ 
+200
+ 
+100
+ 
+Admin cukup memasukkan jumlah lembar.
+ 
+Sistem otomatis menghitung total uang.
+  
+# Uang Setor
+ 
+Input:
+ 
+Jumlah lembar uang besar.
+ 
+Sistem otomatis menghitung total uang setor.
+  
+# Uang Sisa
+ 
+Input uang pecahan kecil.
+ 
+Sistem otomatis menghitung total.
+  
+# Kalkulator Otomatis
+ 
+Website wajib memiliki sistem kalkulasi yang sangat akurat.
+ 
+Mampu menghitung:
+ 
+ 
+- 
+ 
+
+ 
+ 
+- 
+ 
+
+ 
+×
+ 
+÷
+ 
+Persentase
+ 
+Diskon
+ 
+Nominal besar
+ 
+Puluhan
+ 
+Ratusan
+ 
+Ribuan
+ 
+Jutaan
+ 
+Miliar
+ 
+Tidak boleh terjadi error pembulatan.
+ 
+Semua perhitungan harus presisi.
+  
+# Stok Harian
+ 
+Saat toko akan tutup.
+ 
+Penjaga toko menghitung stok nyata.
+ 
+Contoh:
+ 
+Oriza
+ 
+17 Karung
+ 
+Dara
+ 
+10 Karung
+ 
+Telur
+ 
+5 Ikat
+ 
+dan seterusnya.
+ 
+Lalu memasukkan hasil hitungan ke website.
+  
+# VALIDASI
+ 
+Inilah fitur paling penting.
+ 
+Website membandingkan:
+ 
+Data Sistem
+ 
+dengan
+ 
+Stok Fisik.
+ 
+Apabila sama.
+ 
+Status:
+ 
+VALID
+ 
+Apabila berbeda.
+ 
+Harus muncul:
+ 
+Barang apa yang berbeda
+ 
+Selisih berapa
+ 
+Kelebihan
+ 
+Kekurangan
+ 
+Persentase selisih
+ 
+Riwayat transaksi yang mungkin menyebabkan selisih.
+  
+Website juga harus memvalidasi:
+ 
+Cash
+ 
+Transfer
+ 
+QRIS
+ 
+Pengeluaran
+ 
+Uang Setor
+ 
+Uang Sisa
+ 
+Sehingga seluruh data benar-benar sinkron.
+  
+# Laporan
+ 
+Website harus menghasilkan laporan...

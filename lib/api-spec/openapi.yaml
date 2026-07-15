@@ -1,22 +1,41 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Toko Sembako Management System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: barang
+    description: Master barang (produk)
+  - name: barangMasuk
+    description: Barang masuk dari supplier
+  - name: penjualan
+    description: Transaksi penjualan
+  - name: pengeluaran
+    description: Pengeluaran operasional
+  - name: transfer
+    description: Transfer & QRIS
+  - name: cash
+    description: Manajemen uang kas
+  - name: stokHarian
+    description: Stok harian / opname
+  - name: validasi
+    description: Validasi stok dan keuangan
+  - name: laporan
+    description: Laporan harian, mingguan, bulanan, tahunan
+  - name: dashboard
+    description: Data dashboard
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +43,1241 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── BARANG ─────────────────────────────────────────────────
+  /barang:
+    get:
+      operationId: getBarangList
+      tags: [barang]
+      summary: Daftar semua barang
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: kategori
+          in: query
+          schema: { type: string }
+        - name: aktif
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Barang"
+    post:
+      operationId: createBarang
+      tags: [barang]
+      summary: Tambah barang baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BarangInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Barang"
+
+  /barang/{id}:
+    get:
+      operationId: getBarang
+      tags: [barang]
+      summary: Detail barang
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Barang"
+    patch:
+      operationId: updateBarang
+      tags: [barang]
+      summary: Update barang
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BarangUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Barang"
+    delete:
+      operationId: deleteBarang
+      tags: [barang]
+      summary: Hapus barang
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /barang/stok-rendah:
+    get:
+      operationId: getBarangStokRendah
+      tags: [barang]
+      summary: Barang dengan stok hampir habis
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Barang"
+
+  # ─── BARANG MASUK ────────────────────────────────────────────
+  /barang-masuk:
+    get:
+      operationId: getBarangMasukList
+      tags: [barangMasuk]
+      summary: Daftar barang masuk
+      parameters:
+        - name: tanggalDari
+          in: query
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          schema: { type: string }
+        - name: supplierId
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BarangMasuk"
+    post:
+      operationId: createBarangMasuk
+      tags: [barangMasuk]
+      summary: Catat barang masuk
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BarangMasukInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BarangMasuk"
+
+  /barang-masuk/{id}:
+    get:
+      operationId: getBarangMasuk
+      tags: [barangMasuk]
+      summary: Detail barang masuk
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BarangMasuk"
+    delete:
+      operationId: deleteBarangMasuk
+      tags: [barangMasuk]
+      summary: Hapus barang masuk (kembalikan stok)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  # ─── PENJUALAN ───────────────────────────────────────────────
+  /penjualan:
+    get:
+      operationId: getPenjualanList
+      tags: [penjualan]
+      summary: Daftar transaksi penjualan
+      parameters:
+        - name: tanggalDari
+          in: query
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Penjualan"
+    post:
+      operationId: createPenjualan
+      tags: [penjualan]
+      summary: Catat transaksi penjualan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PenjualanInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Penjualan"
+
+  /penjualan/{id}:
+    get:
+      operationId: getPenjualan
+      tags: [penjualan]
+      summary: Detail penjualan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Penjualan"
+    delete:
+      operationId: deletePenjualan
+      tags: [penjualan]
+      summary: Hapus penjualan (kembalikan stok)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  # ─── PENGELUARAN ─────────────────────────────────────────────
+  /pengeluaran:
+    get:
+      operationId: getPengeluaranList
+      tags: [pengeluaran]
+      summary: Daftar pengeluaran
+      parameters:
+        - name: tanggalDari
+          in: query
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          schema: { type: string }
+        - name: kategori
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pengeluaran"
+    post:
+      operationId: createPengeluaran
+      tags: [pengeluaran]
+      summary: Tambah pengeluaran
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PengeluaranInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pengeluaran"
+
+  /pengeluaran/{id}:
+    get:
+      operationId: getPengeluaran
+      tags: [pengeluaran]
+      summary: Detail pengeluaran
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pengeluaran"
+    patch:
+      operationId: updatePengeluaran
+      tags: [pengeluaran]
+      summary: Update pengeluaran
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PengeluaranUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pengeluaran"
+    delete:
+      operationId: deletePengeluaran
+      tags: [pengeluaran]
+      summary: Hapus pengeluaran
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  # ─── TRANSFER / QRIS ─────────────────────────────────────────
+  /transfer:
+    get:
+      operationId: getTransferList
+      tags: [transfer]
+      summary: Daftar transaksi transfer / QRIS
+      parameters:
+        - name: tanggalDari
+          in: query
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          schema: { type: string }
+        - name: jenis
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transfer"
+    post:
+      operationId: createTransfer
+      tags: [transfer]
+      summary: Tambah transfer / QRIS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transfer"
+
+  /transfer/{id}:
+    get:
+      operationId: getTransfer
+      tags: [transfer]
+      summary: Detail transfer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transfer"
+    delete:
+      operationId: deleteTransfer
+      tags: [transfer]
+      summary: Hapus transfer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  # ─── CASH ────────────────────────────────────────────────────
+  /cash:
+    get:
+      operationId: getCashList
+      tags: [cash]
+      summary: Daftar pencatatan kas
+      parameters:
+        - name: tanggalDari
+          in: query
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cash"
+    post:
+      operationId: createCash
+      tags: [cash]
+      summary: Catat kas harian (lembar uang)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cash"
+
+  /cash/{id}:
+    get:
+      operationId: getCash
+      tags: [cash]
+      summary: Detail kas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cash"
+    patch:
+      operationId: updateCash
+      tags: [cash]
+      summary: Update kas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CashUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cash"
+    delete:
+      operationId: deleteCash
+      tags: [cash]
+      summary: Hapus catatan kas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  # ─── STOK HARIAN ─────────────────────────────────────────────
+  /stok-harian:
+    get:
+      operationId: getStokHarianList
+      tags: [stokHarian]
+      summary: Daftar opname stok harian
+      parameters:
+        - name: tanggalDari
+          in: query
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StokHarian"
+    post:
+      operationId: createStokHarian
+      tags: [stokHarian]
+      summary: Input stok fisik harian
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StokHarianInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StokHarian"
+
+  /stok-harian/{id}:
+    get:
+      operationId: getStokHarian
+      tags: [stokHarian]
+      summary: Detail opname harian
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StokHarian"
+
+  # ─── VALIDASI ────────────────────────────────────────────────
+  /validasi/stok:
+    get:
+      operationId: getValidasiStok
+      tags: [validasi]
+      summary: Validasi stok sistem vs fisik
+      parameters:
+        - name: tanggal
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidasiStokResult"
+
+  /validasi/keuangan:
+    get:
+      operationId: getValidasiKeuangan
+      tags: [validasi]
+      summary: Validasi kas, transfer, pengeluaran, setor, sisa
+      parameters:
+        - name: tanggal
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidasiKeuanganResult"
+
+  # ─── LAPORAN ─────────────────────────────────────────────────
+  /laporan/harian:
+    get:
+      operationId: getLaporanHarian
+      tags: [laporan]
+      summary: Laporan harian
+      parameters:
+        - name: tanggal
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaporanHarian"
+
+  /laporan/mingguan:
+    get:
+      operationId: getLaporanMingguan
+      tags: [laporan]
+      summary: Laporan mingguan
+      parameters:
+        - name: tanggalDari
+          in: query
+          required: true
+          schema: { type: string }
+        - name: tanggalSampai
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaporanPeriode"
+
+  /laporan/bulanan:
+    get:
+      operationId: getLaporanBulanan
+      tags: [laporan]
+      summary: Laporan bulanan
+      parameters:
+        - name: tahun
+          in: query
+          required: true
+          schema: { type: integer }
+        - name: bulan
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaporanPeriode"
+
+  /laporan/tahunan:
+    get:
+      operationId: getLaporanTahunan
+      tags: [laporan]
+      summary: Laporan tahunan
+      parameters:
+        - name: tahun
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaporanTahunan"
+
+  # ─── DASHBOARD ───────────────────────────────────────────────
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Ringkasan dashboard hari ini
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/grafik-transaksi:
+    get:
+      operationId: getDashboardGrafikTransaksi
+      tags: [dashboard]
+      summary: Data grafik transaksi 30 hari terakhir
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrafikPoint"
+
+  /dashboard/grafik-stok:
+    get:
+      operationId: getDashboardGrafikStok
+      tags: [dashboard]
+      summary: Data stok per kategori barang
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StokKategoriPoint"
+
+  /dashboard/transaksi-terbaru:
+    get:
+      operationId: getDashboardTransaksiTerbaru
+      tags: [dashboard]
+      summary: 10 transaksi terbaru
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransaksiTerbaru"
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    OkResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        message: { type: string }
+      required: [ok]
+
+    # ─── BARANG ─────────────────────────────────────────────
+    Barang:
+      type: object
+      required: [id, nama, kategori, satuan, hargaBeli, hargaJual, stok, aktif, createdAt]
+      properties:
+        id: { type: integer }
+        nama: { type: string }
+        kategori: { type: string }
+        satuan: { type: string }
+        hargaBeli: { type: number }
+        hargaJual: { type: number }
+        stok: { type: number }
+        stokMinimum: { type: ["number", "null"] }
+        barcode: { type: ["string", "null"] }
+        foto: { type: ["string", "null"] }
+        aktif: { type: boolean }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    BarangInput:
+      type: object
+      required: [nama, kategori, satuan, hargaBeli, hargaJual]
+      properties:
+        nama: { type: string, minLength: 1 }
+        kategori: { type: string }
+        satuan: { type: string }
+        hargaBeli: { type: number }
+        hargaJual: { type: number }
+        stok: { type: number }
+        stokMinimum: { type: number }
+        barcode: { type: string }
+        foto: { type: string }
+        aktif: { type: boolean }
+
+    BarangUpdate:
+      type: object
+      properties:
+        nama: { type: string }
+        kategori: { type: string }
+        satuan: { type: string }
+        hargaBeli: { type: number }
+        hargaJual: { type: number }
+        stok: { type: number }
+        stokMinimum: { type: number }
+        barcode: { type: string }
+        foto: { type: string }
+        aktif: { type: boolean }
+
+    # ─── BARANG MASUK ────────────────────────────────────────
+    BarangMasuk:
+      type: object
+      required: [id, tanggal, supplier, barangId, barangNama, jumlah, harga, totalHarga, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        supplier: { type: string }
+        barangId: { type: integer }
+        barangNama: { type: string }
+        barangSatuan: { type: string }
+        jumlah: { type: number }
+        harga: { type: number }
+        totalHarga: { type: number }
+        catatan: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    BarangMasukInput:
+      type: object
+      required: [tanggal, supplier, barangId, jumlah, harga]
+      properties:
+        tanggal: { type: string }
+        supplier: { type: string }
+        barangId: { type: integer }
+        jumlah: { type: number }
+        harga: { type: number }
+        catatan: { type: string }
+
+    # ─── PENJUALAN ───────────────────────────────────────────
+    PenjualanItem:
+      type: object
+      required: [barangId, barangNama, jumlah, hargaSatuan, subtotal]
+      properties:
+        barangId: { type: integer }
+        barangNama: { type: string }
+        barangSatuan: { type: string }
+        jumlah: { type: number }
+        hargaBeli: { type: number }
+        hargaSatuan: { type: number }
+        diskon: { type: number }
+        subtotal: { type: number }
+        labaKotor: { type: number }
+
+    PenjualanItemInput:
+      type: object
+      required: [barangId, jumlah, hargaSatuan]
+      properties:
+        barangId: { type: integer }
+        jumlah: { type: number }
+        hargaSatuan: { type: number }
+        diskon: { type: number }
+
+    Penjualan:
+      type: object
+      required: [id, tanggal, nomorTransaksi, items, totalHarga, labaKotor, metodePembayaran, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        nomorTransaksi: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PenjualanItem"
+        totalHarga: { type: number }
+        diskonTotal: { type: number }
+        labaKotor: { type: number }
+        metodePembayaran: { type: string }
+        catatan: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    PenjualanInput:
+      type: object
+      required: [tanggal, items, metodePembayaran]
+      properties:
+        tanggal: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PenjualanItemInput"
+        metodePembayaran: { type: string }
+        diskonTotal: { type: number }
+        catatan: { type: string }
+
+    # ─── PENGELUARAN ─────────────────────────────────────────
+    Pengeluaran:
+      type: object
+      required: [id, tanggal, kategori, nominal, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        kategori: { type: string }
+        nominal: { type: number }
+        catatan: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    PengeluaranInput:
+      type: object
+      required: [tanggal, kategori, nominal]
+      properties:
+        tanggal: { type: string }
+        kategori: { type: string }
+        nominal: { type: number }
+        catatan: { type: string }
+
+    PengeluaranUpdate:
+      type: object
+      properties:
+        tanggal: { type: string }
+        kategori: { type: string }
+        nominal: { type: number }
+        catatan: { type: string }
+
+    # ─── TRANSFER / QRIS ─────────────────────────────────────
+    Transfer:
+      type: object
+      required: [id, tanggal, jenis, nominal, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        jenis: { type: string }
+        nominal: { type: number }
+        keterangan: { type: ["string", "null"] }
+        buktiFoto: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    TransferInput:
+      type: object
+      required: [tanggal, jenis, nominal]
+      properties:
+        tanggal: { type: string }
+        jenis: { type: string }
+        nominal: { type: number }
+        keterangan: { type: string }
+        buktiFoto: { type: string }
+
+    # ─── CASH ────────────────────────────────────────────────
+    DenominasiItem:
+      type: object
+      required: [pecahan, jumlahLembar, subtotal]
+      properties:
+        pecahan: { type: integer }
+        jumlahLembar: { type: integer }
+        subtotal: { type: integer }
+
+    Cash:
+      type: object
+      required: [id, tanggal, jenis, denominasi, total, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        jenis: { type: string }
+        denominasi:
+          type: array
+          items:
+            $ref: "#/components/schemas/DenominasiItem"
+        total: { type: number }
+        catatan: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    CashInput:
+      type: object
+      required: [tanggal, jenis, denominasi]
+      properties:
+        tanggal: { type: string }
+        jenis: { type: string }
+        denominasi:
+          type: array
+          items:
+            $ref: "#/components/schemas/DenominasiItem"
+        catatan: { type: string }
+
+    CashUpdate:
+      type: object
+      properties:
+        tanggal: { type: string }
+        jenis: { type: string }
+        denominasi:
+          type: array
+          items:
+            $ref: "#/components/schemas/DenominasiItem"
+        catatan: { type: string }
+
+    # ─── STOK HARIAN ─────────────────────────────────────────
+    StokHarianItem:
+      type: object
+      required: [barangId, barangNama, stokFisik, stokSistem, selisih]
+      properties:
+        barangId: { type: integer }
+        barangNama: { type: string }
+        barangSatuan: { type: string }
+        stokFisik: { type: number }
+        stokSistem: { type: number }
+        selisih: { type: number }
+        status: { type: string }
+
+    StokHarianItemInput:
+      type: object
+      required: [barangId, stokFisik]
+      properties:
+        barangId: { type: integer }
+        stokFisik: { type: number }
+
+    StokHarian:
+      type: object
+      required: [id, tanggal, items, status, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StokHarianItem"
+        status: { type: string }
+        catatan: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    StokHarianInput:
+      type: object
+      required: [tanggal, items]
+      properties:
+        tanggal: { type: string }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StokHarianItemInput"
+        catatan: { type: string }
+
+    # ─── VALIDASI ────────────────────────────────────────────
+    ValidasiStokItem:
+      type: object
+      required: [barangId, barangNama, stokSistem, stokFisik, selisih, persentaseSelisih, status]
+      properties:
+        barangId: { type: integer }
+        barangNama: { type: string }
+        barangSatuan: { type: string }
+        stokSistem: { type: number }
+        stokFisik: { type: number }
+        selisih: { type: number }
+        persentaseSelisih: { type: number }
+        status: { type: string }
+
+    ValidasiStokResult:
+      type: object
+      required: [tanggal, statusKeseluruhan, totalBarang, totalValid, totalSelisih, items]
+      properties:
+        tanggal: { type: string }
+        statusKeseluruhan: { type: string }
+        totalBarang: { type: integer }
+        totalValid: { type: integer }
+        totalSelisih: { type: integer }
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidasiStokItem"
+
+    ValidasiKeuanganResult:
+      type: object
+      required: [tanggal, statusKeseluruhan, totalPenjualan, totalCash, totalTransfer, totalQRIS, totalPengeluaran, totalSetor, totalSisa, selisih]
+      properties:
+        tanggal: { type: string }
+        statusKeseluruhan: { type: string }
+        totalPenjualan: { type: number }
+        totalCash: { type: number }
+        totalTransfer: { type: number }
+        totalQRIS: { type: number }
+        totalPengeluaran: { type: number }
+        totalSetor: { type: number }
+        totalSisa: { type: number }
+        selisih: { type: number }
+        detail:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidasiKeuanganItem"
+
+    # ─── LAPORAN ─────────────────────────────────────────────
+    LaporanHarian:
+      type: object
+      required: [tanggal, omzet, labaKotor, totalTransaksi, totalPengeluaran, totalBarangMasuk, totalCash, totalTransfer, totalQRIS, totalSetor, totalSisa]
+      properties:
+        tanggal: { type: string }
+        omzet: { type: number }
+        labaKotor: { type: number }
+        totalTransaksi: { type: integer }
+        totalPengeluaran: { type: number }
+        totalBarangMasuk: { type: number }
+        totalCash: { type: number }
+        totalTransfer: { type: number }
+        totalQRIS: { type: number }
+        totalSetor: { type: number }
+        totalSisa: { type: number }
+        topBarang:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopBarang"
+        detailPengeluaran:
+          type: array
+          items:
+            $ref: "#/components/schemas/PengeluaranKategori"
+
+    LaporanPeriode:
+      type: object
+      required: [tanggalDari, tanggalSampai, omzetTotal, labaKotorTotal, totalTransaksi, totalPengeluaran, dataHarian]
+      properties:
+        tanggalDari: { type: string }
+        tanggalSampai: { type: string }
+        omzetTotal: { type: number }
+        labaKotorTotal: { type: number }
+        totalTransaksi: { type: integer }
+        totalPengeluaran: { type: number }
+        dataHarian:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrafikPoint"
+        topBarang:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopBarang"
+
+    LaporanTahunan:
+      type: object
+      required: [tahun, omzetTotal, labaKotorTotal, totalTransaksi, totalPengeluaran, dataBulanan]
+      properties:
+        tahun: { type: integer }
+        omzetTotal: { type: number }
+        labaKotorTotal: { type: number }
+        totalTransaksi: { type: integer }
+        totalPengeluaran: { type: number }
+        dataBulanan:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrafikPoint"
+
+    ValidasiKeuanganItem:
+      type: object
+      required: [kategori, nilaiSistem, nilaiFisik, selisih, status]
+      properties:
+        kategori: { type: string }
+        nilaiSistem: { type: number }
+        nilaiFisik: { type: number }
+        selisih: { type: number }
+        status: { type: string }
+
+    TopBarang:
+      type: object
+      required: [barangId, barangNama, jumlahTerjual, omzet]
+      properties:
+        barangId: { type: integer }
+        barangNama: { type: string }
+        jumlahTerjual: { type: number }
+        omzet: { type: number }
+
+    PengeluaranKategori:
+      type: object
+      required: [kategori, total]
+      properties:
+        kategori: { type: string }
+        total: { type: number }
+
+    # ─── DASHBOARD ───────────────────────────────────────────
+    DashboardSummary:
+      type: object
+      required: [tanggal, totalStokBarang, barangHampirHabis, barangMasukHariIni, pengeluaranHariIni, totalCash, totalTransfer, totalQRIS, uangSetor, uangSisa, omzetHariIni, totalTransaksiHariIni, labaKotorHariIni]
+      properties:
+        tanggal: { type: string }
+        totalStokBarang: { type: integer }
+        barangHampirHabis: { type: integer }
+        barangMasukHariIni: { type: number }
+        pengeluaranHariIni: { type: number }
+        totalCash: { type: number }
+        totalTransfer: { type: number }
+        totalQRIS: { type: number }
+        uangSetor: { type: number }
+        uangSisa: { type: number }
+        omzetHariIni: { type: number }
+        totalTransaksiHariIni: { type: integer }
+        labaKotorHariIni: { type: number }
+
+    GrafikPoint:
+      type: object
+      required: [label, omzet, transaksi]
+      properties:
+        label: { type: string }
+        omzet: { type: number }
+        transaksi: { type: integer }
+        pengeluaran: { type: number }
+
+    StokKategoriPoint:
+      type: object
+      required: [kategori, totalStok, jumlahBarang]
+      properties:
+        kategori: { type: string }
+        totalStok: { type: number }
+        jumlahBarang: { type: integer }
+
+    TransaksiTerbaru:
+      type: object
+      required: [id, tanggal, jenis, keterangan, nominal, createdAt]
+      properties:
+        id: { type: integer }
+        tanggal: { type: string }
+        jenis: { type: string }
+        keterangan: { type: string }
+        nominal: { type: number }
+        createdAt: { type: string }
